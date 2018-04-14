@@ -1,0 +1,4 @@
+lw $s1, 0($zero)        ; register int r1 = s[0];
+lw $s2, 4($zero)        ; register int r2 = s[1];
+add $t3, $s1, $s2       ; register int r3 = r1 + r2;
+sw $t3, 8($zero)        ; s[2] = r3;

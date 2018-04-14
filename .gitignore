@@ -1,0 +1,5 @@
+./Report*
+emulator
+*.o
+*.pdf
+*.zip

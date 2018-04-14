@@ -1,0 +1,13 @@
+li $s0, 0
+li $s1, 1
+
+li $t1, 2
+li $t2, 10
+
+slt $t0, $t1, $t2           ; for i = 2 to 10
+beq $t0, $zero, 5           ; break
+add $s2, $s1, $s0
+add $s0, $s1, $zero
+add $s1, $s2, $zero
+addi $t1, $t1, 1            ; $t1++; 
+beq $zero, $zero, -7        ; loop
