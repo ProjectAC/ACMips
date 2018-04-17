@@ -6,6 +6,14 @@
 
 using namespace std;
 
+union Union
+{
+    char c;
+    int i;
+    float f;
+    Word32 w;
+};
+
 void Emulator::showRegester(Word32 id)
 {
     cout << "寄存器" << id << ": " << memory.getReg(id) << endl;
@@ -51,35 +59,95 @@ void Emulator::loadMIPS(Word32 id, string filename)
     }
 }
 
-bool Emulator::run()
+bool Emulator::run(bool show)
 {
     Word32 id = memory.getPC();
     Command s = memory.getWord(id);
     Word32 val = Translator::getType(s);
+
+    /*
+    老版本退出
     if (s == 0xFFFFFFFFu)
         return false;
-
-    showCommand(id);
+    */
+    if (show)
+        showCommand(id);
     memory.step();
 
-    if(val == LW)  // lw
-        memory.setReg(Translator::getR1(s), memory.getWord(memory.getReg(Translator::getR2(s)) + Translator::getIm(s)));
+    // 系统调用
+    if (s == 0x0000000c)
+    {
+        Word32 action = memory.getReg(2);   // $v0
+        Union t;
+
+        memory.getReg(4);
+        if (action == 1)
+        {
+            t.w = memory.getReg(4);
+            printf("%d", t.i);
+        }
+        else if (action == 2)
+        {
+            t.w = memory.getReg(4);
+            printf("%f", t.f);
+        }
+        else if (action == 4)
+        {
+            t.w = memory.getReg(4);
+            printf("%s", memory.getString(t.w));
+        }
+        else if (action == 5)
+        {
+            scanf("%d", &t.i);
+            memory.setReg(4, t.w);
+        }
+        else if (action == 6)
+        {
+            scanf("%f", &t.f);
+            memory.setReg(4, t.w);
+        }
+        else if (action == 8)
+        {
+            t.w = memory.getReg(4);
+            scanf("%s", memory.getString(t.w));
+        }
+        else if (action == 10)
+        {
+            return false;
+        }
+        else if (action == 11)
+        {
+            t.w = memory.getReg(4);
+            printf("%c", t.c);
+        }
+        else if (action == 12)
+        {
+            t.w = 0;
+            scanf("%c", &t.c);
+            memory.setReg(4, t.w);
+        }
+    }
+    // I 类型
+    // 存取
+    else if(val == LW)  // lw
+        memory.setReg(Translator::getR2(s), memory.getWord(memory.getReg(Translator::getR1(s)) + Translator::getIm(s)));
     else if(val == SW)  // sw
-        memory.setWord(memory.getReg(Translator::getR2(s)) + Translator::getIm(s), memory.getReg(Translator::getR1(s)));
+        memory.setWord(memory.getReg(Translator::getR1(s)) + Translator::getIm(s), memory.getReg(Translator::getR2(s)));
+    else if(val == LUI) // lui
+        memory.setReg(Translator::getR2(s), Translator::getIm(s) << 16);
+    // 跳跃
     else if(val == BEQ)  // beq
     {
         if(memory.getReg(Translator::getR1(s)) == memory.getReg(Translator::getR2(s)))
             memory.setPC(memory.getPC() + (((int)(short)Translator::getIm(s)) << 2));
     }
-    else if(val == J)  // j
-        memory.setPC((memory.getPC() & 0xF0000000) | (Translator::getVal(s, 25, 0) << 2) );
-    else if(val == LUI) // lui
-        memory.setReg(Translator::getR2(s), Translator::getIm(s) << 16);
+    // 运算
     else if(val == ORI) // ori
         memory.setReg(Translator::getR2(s), memory.getReg(Translator::getR1(s)) | Translator::getIm(s));
     else if(val == ADDI) // addi
         memory.setReg(Translator::getR2(s), memory.getReg(Translator::getR1(s)) + Translator::getIm(s));
-    else if(val == R)  // R 类型
+    // R类型
+    else if(val == R)
     {
         Word32 type = Translator::getOp(s);
         if(type == ADD)
@@ -89,6 +157,9 @@ bool Emulator::run()
         else if(type == SLT)
             memory.setReg(Translator::getR3(s), memory.getReg(Translator::getR1(s)) < memory.getReg(Translator::getR2(s)));
     }
+    // J类型
+    else if(val == J)  // j
+        memory.setPC((memory.getPC() & 0xF0000000) | (Translator::getVal(s, 25, 0) << 2) );
 
     return true;
 }
@@ -204,7 +275,7 @@ void Emulator::mainLoop()
                 memory.setPC(id);
             }
             
-            run();
+            run(1);
         }
         else if(cmd == "G")
         {
@@ -213,7 +284,8 @@ void Emulator::mainLoop()
             else
             {
                 memory.setPC(id);
-                while (run());
+                while (run(0));
+                getline (cin, tmp);
             }
         }
         else if(cmd == "Q")

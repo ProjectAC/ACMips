@@ -3,6 +3,11 @@
 
 using namespace std;
 
+char* Memory::getString(Word32 id)
+{
+    return (char *)(mem + id);
+}
+
 Word32 Memory::getReg(Word32 id)
 {
     return reg[id];

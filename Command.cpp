@@ -142,6 +142,8 @@ vector<Command> Translator::s2c(std::string s)
 
     flow >> t;
 
+    // I类型
+    // 存取
     if(t == "lw")
     {
         flow >> st >> sd;
@@ -170,43 +172,6 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 15, 0, x.second);
         ret.push_back(res);
     }
-    else if(t == "beq")
-    {
-        flow >> ss >> st >> sd;
-        if ((ss = removeLast(ss)) == "" || (st = removeLast(st)) == "" || notID(ss) || notID(st) || notIm(sd))
-            return ret;
-
-        res = 0;
-        setVal(res, 31, 26, BEQ);
-        setVal(res, 25, 21, getID(ss));
-        setVal(res, 20, 16, getID(st));
-        setVal(res, 15, 0, getIm(sd));
-        ret.push_back(res);
-    }
-    else if(t == "j")
-    {
-        flow >> ss;
-        if (notIm(ss))
-            return ret;
-
-        res = 0;
-        setVal(res, 31, 26, J);
-        setVal(res, 25, 0, getIm(ss));
-        ret.push_back(res);
-    }
-    else if(t == "addi")
-    {
-        flow >> st >> ss >> sd;
-        if ((st = removeLast(st)) == "" || (ss = removeLast(ss)) == "" || notID(ss) || notID(st) || notIm(sd))
-            return ret;
-        
-        res = 0;
-        setVal(res, 31, 26, ADDI);
-        setVal(res, 25, 21, getID(ss));
-        setVal(res, 20, 16, getID(st));
-        setVal(res, 15, 0, getIm(sd) & 0xFFFF);
-        ret.push_back(res);
-    }
     else if(t == "li")
     {
         flow >> st >> sd;
@@ -228,6 +193,35 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 15, 0, getIm(sd) & 0xFFFF);
         ret.push_back(res);
     }
+    // 跳跃
+    else if(t == "beq")
+    {
+        flow >> ss >> st >> sd;
+        if ((ss = removeLast(ss)) == "" || (st = removeLast(st)) == "" || notID(ss) || notID(st) || notIm(sd))
+            return ret;
+
+        res = 0;
+        setVal(res, 31, 26, BEQ);
+        setVal(res, 25, 21, getID(ss));
+        setVal(res, 20, 16, getID(st));
+        setVal(res, 15, 0, getIm(sd));
+        ret.push_back(res);
+    }
+    // 运算
+    else if(t == "addi")
+    {
+        flow >> st >> ss >> sd;
+        if ((st = removeLast(st)) == "" || (ss = removeLast(ss)) == "" || notID(ss) || notID(st) || notIm(sd))
+            return ret;
+        
+        res = 0;
+        setVal(res, 31, 26, ADDI);
+        setVal(res, 25, 21, getID(ss));
+        setVal(res, 20, 16, getID(st));
+        setVal(res, 15, 0, getIm(sd) & 0xFFFF);
+        ret.push_back(res);
+    }
+    // R类型
     else if(
         t == "add" ||
         t == "sub" ||
@@ -254,6 +248,25 @@ vector<Command> Translator::s2c(std::string s)
 
         ret.push_back(res);
     }
+    // J类型
+    else if(t == "j")
+    {
+        flow >> ss;
+        if (notIm(ss))
+            return ret;
+
+        res = 0;
+        setVal(res, 31, 26, J);
+        setVal(res, 25, 0, getIm(ss));
+        ret.push_back(res);
+    }
+    // 系统调用
+    else if(t == "syscall")
+    {
+        res = 0x0000000c;
+        ret.push_back(res);
+    }
+
     /*
     else if () {
     
@@ -274,9 +287,15 @@ vector<Command> Translator::s2c(std::string s)
 
 string Translator::c2s(Command s)
 {
+    // 系统调用
+    if(s == 0x0000000c)
+        return "syscall";
+
     ostringstream res;
     Word32 val = getVal(s, 31, 26);
 
+    // I类型
+    // 存取
     if(val == 0x23)  // lw
     {
         res << "lw " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0) << "(" << name[getVal(s, 25, 21)] << ")";
@@ -285,27 +304,26 @@ string Translator::c2s(Command s)
     {
         res << "sw " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0) << "(" << name[getVal(s, 25, 21)] << ")";
     }
-    else if(val == 0x04)  // beq
-    {
-        res << "beq " << name[getVal(s, 25, 21)] << ", " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0);
-    }
-    else if(val == 0x03)  // j
-    {
-        res << "j " << getVal(s, 25, 0);
-    }
     else if(val == LUI) // lui
     {
         res << "lui " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0);
+    }
+    // 跳跃
+    else if(val == 0x04)  // beq
+    {
+        res << "beq " << name[getVal(s, 25, 21)] << ", " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0);
     }
     else if(val == ORI) // ori
     {
         res << "ori " << name[getVal(s, 20, 16)] << ", " << name[getVal(s, 25, 21)] << ", " << getVal(s, 15, 0);
     }
+    // 运算
     else if(val == ADDI) // addi
     {
         res << "addi " << name[getVal(s, 20, 16)] << ", " << name[getVal(s, 25, 21)] << ", " << getVal(s, 15, 0);
     }
-    else if(val == 0x00)// R 类型
+    // R类型
+    else if(val == 0x00)
     {
         Word32 type = getVal(s, 5, 0);
         if(type == ADD)
@@ -316,6 +334,11 @@ string Translator::c2s(Command s)
             res << "slt";
 
         res << " " << name[getVal(s, 15, 11)] << ", " << name[getVal(s, 25, 21)] << ", " << name[getVal(s, 20, 16)];
+    }
+    // J类型
+    else if(val == 0x03)
+    {
+        res << "j " << getVal(s, 25, 0);
     }
     
     return res.str();
@@ -399,7 +422,7 @@ vector<Command> CommandLoader::load(string filename)
         cout << dec << "载入失败：在第" << cnt << "行发现错误。" << endl, ret.clear();
     fin.close();
 
-    ret.push_back(0xFFFFFFFFu);
+    //ret.push_back(0xFFFFFFFFu);
 
     return ret;
 }

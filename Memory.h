@@ -22,4 +22,6 @@ public:
     Word32 getPC();
     void setPC(Word32 id);
     void step();
+
+    char* getString(Word32 id);
 };

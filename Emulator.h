@@ -15,7 +15,7 @@ class Emulator
     void showCommand(Word32 id);
     void writeMemory(Word32 id, Command cmd);
     void loadMIPS(Word32 id, std::string filename);
-    bool run();
+    bool run(bool show);
 
 public:
 
