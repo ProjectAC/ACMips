@@ -142,8 +142,8 @@ vector<Command> Translator::s2c(std::string s)
 
     flow >> t;
 
-    // Iç±»å‹
-    // å­˜å–
+    // IÀàĞÍ
+    // ´æÈ¡
     if(t == "lw")
     {
         flow >> st >> sd;
@@ -193,7 +193,7 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 15, 0, getIm(sd) & 0xFFFF);
         ret.push_back(res);
     }
-    // è·³è·ƒ
+    // ÌøÔ¾
     else if(t == "beq")
     {
         flow >> ss >> st >> sd;
@@ -207,7 +207,7 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 15, 0, getIm(sd));
         ret.push_back(res);
     }
-    // è¿ç®—
+    // ÔËËã
     else if(t == "addi")
     {
         flow >> st >> ss >> sd;
@@ -221,7 +221,7 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 15, 0, getIm(sd) & 0xFFFF);
         ret.push_back(res);
     }
-    // Rç±»å‹
+    // RÀàĞÍ
     else if(
         t == "add" ||
         t == "sub" ||
@@ -248,7 +248,7 @@ vector<Command> Translator::s2c(std::string s)
 
         ret.push_back(res);
     }
-    // Jç±»å‹
+    // JÀàĞÍ
     else if(t == "j")
     {
         flow >> ss;
@@ -260,7 +260,7 @@ vector<Command> Translator::s2c(std::string s)
         setVal(res, 25, 0, getIm(ss));
         ret.push_back(res);
     }
-    // ç³»ç»Ÿè°ƒç”¨
+    // ÏµÍ³µ÷ÓÃ
     else if(t == "syscall")
     {
         res = 0x0000000c;
@@ -287,15 +287,15 @@ vector<Command> Translator::s2c(std::string s)
 
 string Translator::c2s(Command s)
 {
-    // ç³»ç»Ÿè°ƒç”¨
+    // ÏµÍ³µ÷ÓÃ
     if(s == 0x0000000c)
         return "syscall";
 
     ostringstream res;
     Word32 val = getVal(s, 31, 26);
 
-    // Iç±»å‹
-    // å­˜å–
+    // IÀàĞÍ
+    // ´æÈ¡
     if(val == 0x23)  // lw
     {
         res << "lw " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0) << "(" << name[getVal(s, 25, 21)] << ")";
@@ -308,7 +308,7 @@ string Translator::c2s(Command s)
     {
         res << "lui " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0);
     }
-    // è·³è·ƒ
+    // ÌøÔ¾
     else if(val == 0x04)  // beq
     {
         res << "beq " << name[getVal(s, 25, 21)] << ", " << name[getVal(s, 20, 16)] << ", " << getVal(s, 15, 0);
@@ -317,12 +317,12 @@ string Translator::c2s(Command s)
     {
         res << "ori " << name[getVal(s, 20, 16)] << ", " << name[getVal(s, 25, 21)] << ", " << getVal(s, 15, 0);
     }
-    // è¿ç®—
+    // ÔËËã
     else if(val == ADDI) // addi
     {
         res << "addi " << name[getVal(s, 20, 16)] << ", " << name[getVal(s, 25, 21)] << ", " << getVal(s, 15, 0);
     }
-    // Rç±»å‹
+    // RÀàĞÍ
     else if(val == 0x00)
     {
         Word32 type = getVal(s, 5, 0);
@@ -335,7 +335,7 @@ string Translator::c2s(Command s)
 
         res << " " << name[getVal(s, 15, 11)] << ", " << name[getVal(s, 25, 21)] << ", " << name[getVal(s, 20, 16)];
     }
-    // Jç±»å‹
+    // JÀàĞÍ
     else if(val == 0x03)
     {
         res << "j " << getVal(s, 25, 0);
@@ -404,7 +404,7 @@ vector<Command> CommandLoader::load(string filename)
     fin.open(filename.c_str(), ifstream::in);
     if(!fin.good())
     {
-        cout << "è½½å…¥å¤±è´¥ï¼šæ‰“å¼€æ–‡ä»¶" << filename << "å¤±è´¥ã€‚" << endl; 
+        cout << "ÔØÈëÊ§°Ü£º´ò¿ªÎÄ¼ş" << filename << "Ê§°Ü¡£" << endl; 
         return ret;
     }
 
@@ -417,9 +417,9 @@ vector<Command> CommandLoader::load(string filename)
     }
 
     if(fin.eof())
-        cout << "è½½å…¥æˆåŠŸã€‚" << endl;
+        cout << "ÔØÈë³É¹¦¡£" << endl;
     else
-        cout << dec << "è½½å…¥å¤±è´¥ï¼šåœ¨ç¬¬" << cnt << "è¡Œå‘ç°é”™è¯¯ã€‚" << endl, ret.clear();
+        cout << dec << "ÔØÈëÊ§°Ü£ºÔÚµÚ" << cnt << "ĞĞ·¢ÏÖ´íÎó¡£" << endl, ret.clear();
     fin.close();
 
     //ret.push_back(0xFFFFFFFFu);

@@ -16,13 +16,13 @@ union Union
 
 void Emulator::showRegester(Word32 id)
 {
-    cout << "å¯„å­˜å™¨" << id << ": " << memory.getReg(id) << endl;
+    cout << "¼Ä´æÆ÷" << id << ": " << memory.getReg(id) << endl;
 }
 
 void Emulator::showByte(Word32 id)
 {
     Word32 t = memory.getByte(id); 
-    cout << "å­—èŠ‚" << id << ": " << t << " (";
+    cout << "×Ö½Ú" << id << ": " << t << " (";
     for (int i = 7; i >= 0; i--)
         cout << ((t >> i) & 1);
     cout << ")" << endl;
@@ -31,7 +31,7 @@ void Emulator::showByte(Word32 id)
 void Emulator::showWord(Word32 id)
 {
     Word32 t = memory.getWord(id); 
-    cout << "å­—" << id << ": " << t << " (";
+    cout << "×Ö" << id << ": " << t << " (";
     for (int i = 31; i >= 0; i--)
         cout << ((t >> i) & 1);
     cout << ")" << endl;
@@ -39,7 +39,7 @@ void Emulator::showWord(Word32 id)
 
 void Emulator::showCommand(Word32 id)
 {
-    cout << "æŒ‡ä»¤" << setw(10) << id << ": " << setw(0);
+    cout << "Ö¸Áî" << setw(10) << id << ": " << setw(0);
     cout << Translator::c2s(memory.getWord(id)) << endl;
 }
 
@@ -66,7 +66,7 @@ bool Emulator::run(bool show)
     Word32 val = Translator::getType(s);
 
     /*
-    è€ç‰ˆæœ¬é€€å‡º
+    ÀÏ°æ±¾ÍË³ö
     if (s == 0xFFFFFFFFu)
         return false;
     */
@@ -74,7 +74,7 @@ bool Emulator::run(bool show)
         showCommand(id);
     memory.step();
 
-    // ç³»ç»Ÿè°ƒç”¨
+    // ÏµÍ³µ÷ÓÃ
     if (s == 0x0000000c)
     {
         Word32 action = memory.getReg(2);   // $v0
@@ -127,26 +127,26 @@ bool Emulator::run(bool show)
             memory.setReg(4, t.w);
         }
     }
-    // I ç±»å‹
-    // å­˜å–
+    // I ÀàĞÍ
+    // ´æÈ¡
     else if(val == LW)  // lw
         memory.setReg(Translator::getR2(s), memory.getWord(memory.getReg(Translator::getR1(s)) + Translator::getIm(s)));
     else if(val == SW)  // sw
         memory.setWord(memory.getReg(Translator::getR1(s)) + Translator::getIm(s), memory.getReg(Translator::getR2(s)));
     else if(val == LUI) // lui
         memory.setReg(Translator::getR2(s), Translator::getIm(s) << 16);
-    // è·³è·ƒ
+    // ÌøÔ¾
     else if(val == BEQ)  // beq
     {
         if(memory.getReg(Translator::getR1(s)) == memory.getReg(Translator::getR2(s)))
             memory.setPC(memory.getPC() + (((int)(short)Translator::getIm(s)) << 2));
     }
-    // è¿ç®—
+    // ÔËËã
     else if(val == ORI) // ori
         memory.setReg(Translator::getR2(s), memory.getReg(Translator::getR1(s)) | Translator::getIm(s));
     else if(val == ADDI) // addi
         memory.setReg(Translator::getR2(s), memory.getReg(Translator::getR1(s)) + Translator::getIm(s));
-    // Rç±»å‹
+    // RÀàĞÍ
     else if(val == R)
     {
         Word32 type = Translator::getOp(s);
@@ -157,7 +157,7 @@ bool Emulator::run(bool show)
         else if(type == SLT)
             memory.setReg(Translator::getR3(s), memory.getReg(Translator::getR1(s)) < memory.getReg(Translator::getR2(s)));
     }
-    // Jç±»å‹
+    // JÀàĞÍ
     else if(val == J)  // j
         memory.setPC((memory.getPC() & 0xF0000000) | (Translator::getVal(s, 25, 0) << 2) );
 
@@ -181,7 +181,7 @@ void Emulator::mainLoop()
         {
             if (!ss.good())
             {
-                cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+                cout << "´íÎóµÄÖ¸Áî¡£" << endl;
                 continue;
             }
             ss >> c;
@@ -190,7 +190,7 @@ void Emulator::mainLoop()
         {
             if (!ss.good())
             {
-                cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+                cout << "´íÎóµÄÖ¸Áî¡£" << endl;
                 continue;
             }
             ss >> id;
@@ -200,7 +200,7 @@ void Emulator::mainLoop()
         {
             if (Translator::notID(c))
             {
-                cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+                cout << "´íÎóµÄÖ¸Áî¡£" << endl;
                 continue;
             }
             id = Translator::getID(c);
@@ -208,14 +208,14 @@ void Emulator::mainLoop()
         }
         else if(cmd == "D")
         {
-            if((id & 3) == 0)  // å¯¹é½
+            if((id & 3) == 0)  // ¶ÔÆë
                 showWord(id);
             showByte(id);
         }
         else if(cmd == "U")
         {
             if(id & 3) 
-                cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl; 
+                cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl; 
             else
                 showCommand(id);
         }
@@ -223,7 +223,7 @@ void Emulator::mainLoop()
         {
             getline(ss, c);
             if(id & 3) 
-                cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl; 
+                cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl; 
             else 
             {
                 auto cmds = Translator::s2c(c);
@@ -239,12 +239,12 @@ void Emulator::mainLoop()
             ss >> t;
             if (ss.good())
             {
-                cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+                cout << "´íÎóµÄÖ¸Áî¡£" << endl;
                 continue;
             }   
 
             if(id & 3) 
-                cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl; 
+                cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl; 
             else 
                 writeMemory(id, t);
         }
@@ -253,12 +253,12 @@ void Emulator::mainLoop()
             ss >> c;
             if (ss.good())
             {
-                cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+                cout << "´íÎóµÄÖ¸Áî¡£" << endl;
                 continue;
             }
 
             if(id & 3) 
-                cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl; 
+                cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl; 
             else
                 loadMIPS(id, c);
         }
@@ -269,7 +269,7 @@ void Emulator::mainLoop()
                 ss >> id;
                 if(id & 3)
                 {
-                    cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl;
+                    cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl;
                     continue;
                 }
                 memory.setPC(id);
@@ -280,7 +280,7 @@ void Emulator::mainLoop()
         else if(cmd == "G")
         {
             if(id & 3) 
-                cout << "åœ°å€æ— æ„ä¹‰ï¼Œè¯·æ£€æŸ¥æ˜¯å¦å¯¹é½ã€‚" << endl; 
+                cout << "µØÖ·ÎŞÒâÒå£¬Çë¼ì²éÊÇ·ñ¶ÔÆë¡£" << endl; 
             else
             {
                 memory.setPC(id);
@@ -296,21 +296,21 @@ void Emulator::mainLoop()
         {
             cout << "\
 ======================================================\n\
-R <å¯„å­˜å™¨å·>  çœ‹å¯„å­˜å™¨\n\
-D <å†…å­˜å·>  çœ‹å†…å­˜\n\
-U <å†…å­˜å·>  çœ‹æŒ‡ä»¤\n\
-W <å†…å­˜å·> <å†…å®¹>  å†™å…¥32ä½æ•°æ®\n\
-A <å†…å­˜å·> <æŒ‡ä»¤>  å†™å…¥æŒ‡ä»¤ï¼ˆæ³¨æ„æ˜¯å­—ç¬¦æŒ‡ä»¤ä¸æ˜¯äºŒè¿›åˆ¶ï¼‰\n\
-L <å†…å­˜å·> <æ–‡ä»¶å>  ä»æ–‡ä»¶åŠ è½½æŒ‡ä»¤åºåˆ—\n\
-T <å†…å­˜å·>  æ‰§è¡ŒæŒ‡ä»¤\n\
-G <å†…å­˜å·>  æ‰§è¡ŒæŒ‡ä»¤ç›´åˆ°é‡åˆ°ç»“æŸç¬¦0xFFFFFFFFu\n\
-H  æŸ¥çœ‹æœ¬å¸®åŠ©\n\
-Q  é€€å‡º\n\
+R <¼Ä´æÆ÷ºÅ>  ¿´¼Ä´æÆ÷\n\
+D <ÄÚ´æºÅ>  ¿´ÄÚ´æ\n\
+U <ÄÚ´æºÅ>  ¿´Ö¸Áî\n\
+W <ÄÚ´æºÅ> <ÄÚÈİ>  Ğ´Èë32Î»Êı¾İ\n\
+A <ÄÚ´æºÅ> <Ö¸Áî>  Ğ´ÈëÖ¸Áî£¨×¢ÒâÊÇ×Ö·ûÖ¸Áî²»ÊÇ¶ş½øÖÆ£©\n\
+L <ÄÚ´æºÅ> <ÎÄ¼şÃû>  ´ÓÎÄ¼ş¼ÓÔØÖ¸ÁîĞòÁĞ\n\
+T <ÄÚ´æºÅ>  Ö´ĞĞÖ¸Áî\n\
+G <ÄÚ´æºÅ>  Ö´ĞĞÖ¸ÁîÖ±µ½Óöµ½½áÊø·û0xFFFFFFFFu\n\
+H  ²é¿´±¾°ïÖú\n\
+Q  ÍË³ö\n\
 ======================================================\n" << endl;
         }
         else
         {
-            cout << "é”™è¯¯çš„æŒ‡ä»¤ã€‚" << endl;
+            cout << "´íÎóµÄÖ¸Áî¡£" << endl;
         }
     }
 }
